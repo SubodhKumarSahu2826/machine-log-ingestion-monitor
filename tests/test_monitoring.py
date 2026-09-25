@@ -7,6 +7,7 @@ from backend.models import (
     Integration,
     IntegrationHealthState,
     Machine,
+    RecoveryAttempt,
     Station,
 )
 from backend.repositories.monitoring_repository import MonitoringRepository
@@ -51,15 +52,21 @@ def monitor_integration(db_session):
         db_session.commit()
         db_session.refresh(integration)
 
-    # Clean existing incidents for this integration
-    db_session.query(Incident).filter(Incident.integration_id == integration.id).delete()
-    db_session.commit()
+    # Clean existing incidents and recovery attempts for this integration
+    incident_ids = [inc.id for inc in db_session.query(Incident.id).filter(Incident.integration_id == integration.id).all()]
+    if incident_ids:
+        db_session.query(RecoveryAttempt).filter(RecoveryAttempt.incident_id.in_(incident_ids)).delete(synchronize_session=False)
+        db_session.query(Incident).filter(Incident.id.in_(incident_ids)).delete(synchronize_session=False)
+        db_session.commit()
 
     yield integration
 
-    # Cleanup incidents
-    db_session.query(Incident).filter(Incident.integration_id == integration.id).delete()
-    db_session.commit()
+    # Cleanup incidents and recovery attempts
+    incident_ids = [inc.id for inc in db_session.query(Incident.id).filter(Incident.integration_id == integration.id).all()]
+    if incident_ids:
+        db_session.query(RecoveryAttempt).filter(RecoveryAttempt.incident_id.in_(incident_ids)).delete(synchronize_session=False)
+        db_session.query(Incident).filter(Incident.id.in_(incident_ids)).delete(synchronize_session=False)
+        db_session.commit()
 
 
 def test_fresh_integration_is_healthy():

@@ -92,8 +92,8 @@ factory-data-reliability-monitor/
 ├── frontend/
 │   ├── src/
 │   │   ├── api/client.ts       # Type-safe API client
-│   │   ├── components/         # Reusable UI components (StatusBadge, DiagnosticChecks, etc.)
-│   │   ├── pages/              # Views (Dashboard, IntegrationDetail, IncidentDetail, SimulatorJudge)
+│   │   ├── components/         # Industrial UI components (StatusIndicator, FactoryFlow, IntegrationTable, etc.)
+│   │   ├── pages/              # Views (OperationsPage, IntegrationsPage, IncidentPage, DemoPage)
 │   │   ├── types/index.ts      # TypeScript interfaces
 │   │   ├── utils/formatters.ts # Formatting and design tokens
 │   │   ├── App.tsx             # Root layout & auto-refresh polling
