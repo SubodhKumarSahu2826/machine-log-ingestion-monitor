@@ -1,0 +1,47 @@
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: factory_user
+      POSTGRES_PASSWORD: factory_password
+      POSTGRES_DB: factory_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factory_user -d factory_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+psycopg://factory_user:factory_password@db:5432/factory_db
+      - ENABLE_BACKGROUND_MONITOR=true
+      - MONITORING_INTERVAL_SECONDS=5.0
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+
+
